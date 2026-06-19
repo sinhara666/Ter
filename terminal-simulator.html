@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Simulator - Run AI Free & Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0d0d0d;
+            color: #00ff00;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ff006e;
+            font-weight: bold;
+        }
+        
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 0.9em;
+            color: #888;
+        }
+        
+        .terminal-container {
+            flex: 1;
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .terminal-line {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .prompt {
+            color: #00ff00;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .command {
+            color: #ffff00;
+            word-break: break-all;
+            flex: 1;
+        }
+        
+        .output {
+            color: #00ff00;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-left: 20px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .error {
+            color: #ff6b6b;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .prompt-input {
+            color: #00ff00;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            outline: none;
+        }
+        
+        input::placeholder {
+            color: #666;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #ff006e, #8338ec);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        
+        button:active {
+            opacity: 0.8;
+        }
+        
+        .secondary-btn {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        
+        .secondary-btn:active {
+            background: rgba(0, 255, 0, 0.3);
+        }
+        
+        .tutorials {
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .tutorials h3 {
+            color: #ff006e;
+            margin-bottom: 10px;
+        }
+        
+        .tutorial-item {
+            background: rgba(0, 255, 0, 0.05);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .tutorial-item:active {
+            background: rgba(0, 255, 0, 0.15);
+        }
+        
+        .tutorial-item code {
+            color: #ffff00;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .terminal-container {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.2em;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Terminal Simulator</h1>
+        <p>Run AI Free & Offline - Tutorial Mode</p>
+    </div>
+    
+    <div class="tutorials">
+        <h3>Quick Commands</h3>
+        <div class="tutorial-item" onclick="runCommand('ollama list')">
+            <code>ollama list</code> - Show installed models
+        </div>
+        <div class="tutorial-item" onclick="runCommand('ollama run llama-3.1-8b-instant')">
+            <code>ollama run llama-3.1-8b-instant</code> - Run a model
+        </div>
+        <div class="tutorial-item" onclick="runCommand('ollama pull llama-3.3-70b-versatile')">
+            <code>ollama pull llama-3.3-70b-versatile</code> - Download a model
+        </div>
+        <div class="tutorial-item" onclick="runCommand('ollama serve')">
+            <code>ollama serve</code> - Start the Ollama server
+        </div>
+    </div>
+    
+    <div class="buttons">
+        <button onclick="clearTerminal()">Clear Terminal</button>
+        <button class="secondary-btn" onclick="copyLastCommand()">Copy Last Command</button>
+    </div>
+    
+    <div class="terminal-container" id="terminal"></div>
+    
+    <div class="input-area">
+        <span class="prompt-input">$</span>
+        <input 
+            type="text" 
+            id="commandInput" 
+            placeholder="Type a command or click Quick Commands above..."
+            autocomplete="off"
+        >
+    </div>
+    
+    <script>
+        const terminal = document.getElementById('terminal');
+        const commandInput = document.getElementById('commandInput');
+        let lastCommand = '';
+        
+        // Command responses
+        const responses = {
+            'ollama list': `NAME                          ID              SIZE      MODIFIED
+llama-3.1-8b-instant         e5905f1e7c04    4.7 GB    2 minutes ago
+llama-3.3-70b-versatile      8ddc3c5f4a08    45 GB     5 minutes ago
+phi-2                        6c4c9b8e3d2f    2.8 GB    1 hour ago`,
+            
+            'ollama pull llama-3.3-70b-versatile': `pulling manifest
+pulling 8ddc3c5f4a08... 100%
+verifying sha256 digest
+writing manifest
+success`,
+            
+            'ollama run llama-3.1-8b-instant': `>>> What is the capital of France?
+The capital of France is Paris. It's located in north-central France
+and is the country's largest city. Paris is known for its iconic
+landmarks like the Eiffel Tower, Notre-Dame Cathedral, and the Louvre
+Museum. The city is also famous for its art, culture, cuisine, and
+romantic atmosphere.
+
+>>> `,
+            
+            'ollama serve': `time=2026-06-19T14:32:45.123Z level=INFO source=main.go:104 msg="Listening on 127.0.0.1:11434"
+time=2026-06-19T14:32:45.456Z level=INFO source=server.go:312 msg="Loaded dynamic library"
+Server started on http://localhost:11434`,
+            
+            'ls': `Applications
+Desktop
+Documents
+Downloads
+Library
+Movies
+Music
+Pictures
+Public`,
+            
+            'cd ollama': ``,
+            
+            'python -v': `Python 3.11.7`,
+            
+            'clear': 'CLEAR',
+            
+            'help': `Available Ollama Commands:
+ollama list           - List all downloaded models
+ollama pull <model>   - Download a model
+ollama run <model>    - Run a model interactively
+ollama serve          - Start the Ollama server
+ollama rm <model>     - Remove a model
+ollama show <model>   - Show model details`,
+        };
+        
+        function addLine(prompt = '$', command = '', output = '', isError = false) {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            
+            if (command) {
+                const promptSpan = document.createElement('span');
+                promptSpan.className = 'prompt';
+                promptSpan.textContent = prompt;
+                line.appendChild(promptSpan);
+                
+                const cmdSpan = document.createElement('span');
+                cmdSpan.className = 'command';
+                cmdSpan.textContent = command;
+                line.appendChild(cmdSpan);
+                
+                terminal.appendChild(line);
+            }
+            
+            if (output) {
+                const outputLine = document.createElement('div');
+                outputLine.className = `terminal-line ${isError ? 'error' : ''}`;
+                
+                const outputSpan = document.createElement('span');
+                outputSpan.className = 'output';
+                outputSpan.textContent = output;
+                outputLine.appendChild(outputSpan);
+                
+                terminal.appendChild(outputLine);
+            }
+            
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function runCommand(cmd) {
+            commandInput.value = '';
+            lastCommand = cmd;
+            
+            addLine('$', cmd);
+            
+            // Get response
+            let response = responses[cmd.toLowerCase()] || `Command not found: ${cmd}`;
+            let isError = !responses[cmd.toLowerCase()];
+            
+            if (response === 'CLEAR') {
+                clearTerminal();
+                return;
+            }
+            
+            addLine('', response, '', isError);
+        }
+        
+        function clearTerminal() {
+            terminal.innerHTML = '';
+            addLine('$', 'clear');
+        }
+        
+        function copyLastCommand() {
+            if (lastCommand) {
+                navigator.clipboard.writeText(lastCommand);
+                alert(`Copied: ${lastCommand}`);
+            }
+        }
+        
+        // Enter key to run command
+        commandInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = commandInput.value.trim();
+                if (cmd) {
+                    runCommand(cmd);
+                }
+            }
+        });
+        
+        // Welcome message
+        window.addEventListener('load', () => {
+            addLine('$', 'Welcome to Run AI Free & Offline Tutorial');
+            addLine('', 'Click Quick Commands above or type your own commands');
+            addLine('', 'Type "help" for available Ollama commands');
+        });
+        
+        // Focus input on load
+        commandInput.focus();
+    </script>
+</body>
+</html>
